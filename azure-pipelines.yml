@@ -16,10 +16,32 @@ stages:
         - npm
 
     variables:
-      wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
-      dotnetSdkVersion: '3.1.100'
+    - name: wwwrootDir
+      value: 'Tailspin.SpaceGame.Web/wwwroot'
+    - name: dotnetSdkVersion
+      value: '3.1.100'
+    - group: Release
 
     steps:
+    - task: AzureCLI@2
+      displayName:
+      inputs:
+        azureSubscription: 'VS Ent-MPN- ODIAZ(972e401d-226e-48c7-a463-6d562c39edda)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az group create --name "$(rgName)" --location eastus
+          az storage account create --name "$(storageName)" --resource-group "$(rgName)" --sku Standard_LRS
+          az functionapp create --name "$(leaderboardName)" --resource-group "$(rgName)" --storage-account $storageName --consumption-plan-location <region>
+          az appservice plan create --name "$(planName)" --resource-group "$(rgName)" --sku S1
+          az webapp create --name "$(WebAppNameDev)" --resource-group "$(rgName)" --plan "$(planName)"
+          az webapp create --name "$(WebAppNameTest)" --resource-group "$(rgName)" --plan "$(planName)"
+          az webapp create --name "$(WebAppNameStaging)" --resource-group "$(rgName)" --plan "$(planName)"          
+          az webapp config connection-string set --name "$(WebAppNameDev)" --resource-group "$(rgName)" --settings "DefaultConnection=$DB_CONNECTION_STRING" --connection-string-type SQLAzure
+          az webapp config connection-string set --name "$(WebAppNameStaging)" --resource-group "$(rgName)" --settings "DefaultConnection=$DB_CONNECTION_STRING" --connection-string-type SQLAzure
+          az webapp config connection-string set --name "$(WebAppNameTest)" --resource-group "$(rgName)" --settings "DefaultConnection=$DB_CONNECTION_STRING" --connection-string-type SQLAzure
+          az webapp list   --resource-group "$(rgName)"   --query "[].{hostName: defaultHostName, state: state}"   --output table
+          az webapp deployment slot create --name "$(WebAppNameStaging)" --resource-group "$(rgName)" --slot swap
     - task: UseDotNet@2
       displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
       inputs:
@@ -85,6 +107,29 @@ stages:
             displayName: 'Azure App Service Deploy: website'
             inputs:
               azureSubscription: 'Resource Manager - Tailspin - Space Game'
-              appName: '$(WebAppName)'
+              appName: '$(WebAppNameDev)'
               appType: webAppLinux
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/Tailspin.SpaceGame.Web.zip'
+          - task: AzureFunctionApp@1
+            displayName: 'Azure Function Deploy: leaderboard'
+            inputs:
+              azureSubscription: 'Resource Manager - Tailspin - Space Game'
+              appType: functionAppLinux
+              appName: '$(LeaderboardAppName)'
+              package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/Tailspin.SpaceGame.LeaderboardFunction.zip'
+              runtimeStack: DOCKER|microsoft/azure-functions-dotnet-core2.0:2.0
+              startUpCommand: 'func azure functionapp publish $(functionAppName) --no-bundler'
+          - task: AzureAppServiceSettings@1
+            displayName: 'Update web app settings'
+            inputs:
+              azureSubscription: 'Resource Manager - Tailspin - Space Game'
+              appName: $(WebAppName)
+              resourceGroupName: $(ResourceGroupName)
+              appSettings: |
+                [
+                  {
+                    "name": "AppSettings:LeaderboardFunctionUrl",
+                    "value": "http://$(LeaderboardAppName).azurewebsites.net/api/LeaderboardFunction",
+                    "slotSetting": false
+                  }
+                ]
