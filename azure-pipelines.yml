@@ -32,8 +32,8 @@ stages:
         inlineScript: |
           az group create --name "$(rgName)" --location eastus
           az storage account create --name "$(storageName)" --resource-group "$(rgName)" --sku Standard_LRS
-          az functionapp create --name "$(leaderboardName)" --resource-group "$(rgName)" --storage-account $storageName --consumption-plan-location <region>
           az appservice plan create --name "$(planName)" --resource-group "$(rgName)" --sku B1
+          az functionapp create --name "$(leaderboardName)" --resource-group "$(rgName)" --storage-account $storageName --consumption-plan-location eastus
           az webapp create --name "$(WebAppNameDev)" --resource-group "$(rgName)" --plan "$(planName)"
           az webapp create --name "$(WebAppNameTest)" --resource-group "$(rgName)" --plan "$(planName)"
           az webapp create --name "$(WebAppNameStaging)" --resource-group "$(rgName)" --plan "$(planName)"          
