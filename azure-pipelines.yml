@@ -33,7 +33,7 @@ stages:
           az group create --name "$(rgName)" --location eastus
           az storage account create --name "$(storageName)" --resource-group "$(rgName)" --sku Standard_LRS
           az functionapp create --name "$(leaderboardName)" --resource-group "$(rgName)" --storage-account $storageName --consumption-plan-location <region>
-          az appservice plan create --name "$(planName)" --resource-group "$(rgName)" --sku S1
+          az appservice plan create --name "$(planName)" --resource-group "$(rgName)" --sku B1
           az webapp create --name "$(WebAppNameDev)" --resource-group "$(rgName)" --plan "$(planName)"
           az webapp create --name "$(WebAppNameTest)" --resource-group "$(rgName)" --plan "$(planName)"
           az webapp create --name "$(WebAppNameStaging)" --resource-group "$(rgName)" --plan "$(planName)"          
@@ -41,7 +41,7 @@ stages:
           az webapp config connection-string set --name "$(WebAppNameStaging)" --resource-group "$(rgName)" --settings "DefaultConnection=$DB_CONNECTION_STRING" --connection-string-type SQLAzure
           az webapp config connection-string set --name "$(WebAppNameTest)" --resource-group "$(rgName)" --settings "DefaultConnection=$DB_CONNECTION_STRING" --connection-string-type SQLAzure
           az webapp list   --resource-group "$(rgName)"   --query "[].{hostName: defaultHostName, state: state}"   --output table
-          az webapp deployment slot create --name "$(WebAppNameStaging)" --resource-group "$(rgName)" --slot swap
+#          az webapp deployment slot create --name "$(WebAppNameStaging)" --resource-group "$(rgName)" --slot swap
     - task: UseDotNet@2
       displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
       inputs:
