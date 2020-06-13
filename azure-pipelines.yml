@@ -122,7 +122,7 @@ stages:
             displayName: 'Update web app settings'
             inputs:
               azureSubscription: 'VS Ent-MPN- ODIAZ(972e401d-226e-48c7-a463-6d562c39edda)'
-              appName: '$(WebAppName)'
+              appName: '$(webazfuncionName)'
               resourceGroupName: '$(ResourceGroupName)'
               appSettings: |
                 [
