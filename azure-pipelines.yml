@@ -24,7 +24,6 @@ stages:
 
     steps:
     - task: AzureCLI@2
-      displayName:
       inputs:
         azureSubscription: 'VS Ent-MPN- ODIAZ(972e401d-226e-48c7-a463-6d562c39edda)'
         scriptType: 'bash'
