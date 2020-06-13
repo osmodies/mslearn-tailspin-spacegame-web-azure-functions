@@ -105,25 +105,25 @@ stages:
           - task: AzureWebApp@1
             displayName: 'Azure App Service Deploy: website'
             inputs:
-              azureSubscription: 'VS Ent-MPN- ODIAZ(972e401d-226e-48c7-a463-6d562c39edda)'
+              azureSubscription: 'VS Ent-MPN- ODIAZ(1)(972e401d-226e-48c7-a463-6d562c39edda)'
+              appType: 'webAppLinux'
               appName: '$(WebAppNameDev)'
-              appType: webAppLinux
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/Tailspin.SpaceGame.Web.zip'
           - task: AzureFunctionApp@1
             displayName: 'Azure Function Deploy: leaderboard'
             inputs:
               azureSubscription: 'VS Ent-MPN- ODIAZ(972e401d-226e-48c7-a463-6d562c39edda)'
-              appType: functionAppLinux
+              appType: 'functionAppLinux'
               appName: '$(LeaderboardAppName)'
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/Tailspin.SpaceGame.LeaderboardFunction.zip'
-              runtimeStack: DOCKER|microsoft/azure-functions-dotnet-core2.0:2.0
+              runtimeStack: 'DOCKER|microsoft/azure-functions-dotnet-core2.0:2.0'
               startUpCommand: 'func azure functionapp publish $(functionAppName) --no-bundler'
           - task: AzureAppServiceSettings@1
             displayName: 'Update web app settings'
             inputs:
               azureSubscription: 'VS Ent-MPN- ODIAZ(972e401d-226e-48c7-a463-6d562c39edda)'
-              appName: $(WebAppName)
-              resourceGroupName: $(ResourceGroupName)
+              appName: '$(WebAppName)'
+              resourceGroupName: '$(ResourceGroupName)'
               appSettings: |
                 [
                   {
